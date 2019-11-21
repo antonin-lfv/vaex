@@ -178,6 +178,8 @@ class ExecutorLocal(Executor):
 
     def process_part(self, thread_index, i1, i2, run):
         if not run.cancelled:
+            if thread_index >= len(run.block_scopes):
+                raise RuntimeError(f'thread_index={thread_index} while only expecting {len(run.block_scopes)}')
             block_scope = run.block_scopes[thread_index]
             block_scope.move(i1, i2)
             df = run.df

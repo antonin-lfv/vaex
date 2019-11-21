@@ -1,6 +1,7 @@
 import vaex.serialize
 import json
 import numpy as np
+import pyarrow as pa
 from vaex import column
 from vaex.column import _to_string_sequence, _to_string_column, _to_string_list_sequence, _is_stringy
 import re
@@ -849,7 +850,7 @@ def str_capitalize(x):
     4         Way.
     """
     sl = _to_string_sequence(x).capitalize()
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 @register_function(scope='str')
 def str_cat(x, other):
@@ -924,7 +925,8 @@ def str_center(x, width, fillchar=' '):
     4  !!!!way.!!!
     """
     sl = _to_string_sequence(x).pad(width, fillchar, True, True)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_contains(x, pattern, regex=True):
@@ -1120,7 +1122,8 @@ def str_get(x, i):
         sl = x.slice_string_end(-1)
     else:
         sl = x.slice_string(i, i+1)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_index(x, sub, start=0, end=None):
@@ -1161,7 +1164,8 @@ def str_index(x, sub, start=0, end=None):
 def str_join(x, sep):
     """Same as find (difference with pandas is that it does not raise a ValueError)"""
     sl = _to_string_list_sequence(x).join(sep)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_len(x):
@@ -1257,7 +1261,8 @@ def str_ljust(x, width, fillchar=' '):
     4   way.!!!!!!
     """
     sl = _to_string_sequence(x).pad(width, fillchar, False, True)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_lower(x):
@@ -1289,7 +1294,8 @@ def str_lower(x):
     4         way.
     """
     sl = _to_string_sequence(x).lower()
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_lstrip(x, to_strip=None):
@@ -1323,7 +1329,8 @@ def str_lstrip(x, to_strip=None):
     """
     # in c++ we give empty string the same meaning as None
     sl = _to_string_sequence(x).lstrip('' if to_strip is None else to_strip) if to_strip != '' else x
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_match(x, pattern):
@@ -1392,7 +1399,8 @@ def str_pad(x, width, side='left', fillchar=' '):
     4   !!!!!!way.
     """
     sl = _to_string_sequence(x).pad(width, fillchar, side in ['left', 'both'], side in ['right', 'both'])
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_repeat(x, repeats):
@@ -1425,7 +1433,8 @@ def str_repeat(x, repeats):
     4                       way.way.way.
     """
     sl = _to_string_sequence(x).repeat(repeats)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_replace(x, pat, repl, n=-1, flags=0, regex=False):
@@ -1462,7 +1471,8 @@ def str_replace(x, pat, repl, n=-1, flags=0, regex=False):
     4         way.
     """
     sl = _to_string_sequence(x).replace(pat, repl, n, flags, regex)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_rfind(x, sub, start=0, end=None):
@@ -1566,7 +1576,8 @@ def str_rjust(x, width, fillchar=' '):
     4   !!!!!!way.
     """
     sl = _to_string_sequence(x).pad(width, fillchar, True, False)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 # TODO: rpartition
 
@@ -1602,7 +1613,8 @@ def str_rstrip(x, to_strip=None):
     """
     # in c++ we give empty string the same meaning as None
     sl = _to_string_sequence(x).rstrip('' if to_strip is None else to_strip) if to_strip != '' else x
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function(scope='str')
 def str_slice(x, start=0, stop=None):  # TODO: support n
@@ -1722,7 +1734,7 @@ def str_strip(x, to_strip=None):
     """
     # in c++ we give empty string the same meaning as None
     sl = _to_string_sequence(x).strip('' if to_strip is None else to_strip) if to_strip != '' else x
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 # TODO: swapcase, translate
 
@@ -1756,7 +1768,7 @@ def str_title(x):
     4         Way.
     """
     sl = _to_string_sequence(x).title()
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 
 @register_function(scope='str')
@@ -1791,7 +1803,7 @@ def str_upper(x):
 
     """
     sl = _to_string_sequence(x).upper()
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 
 # TODO: wrap, is*, get_dummies(maybe?)
@@ -1827,7 +1839,7 @@ def str_zfill(x, width):
     4  00000000way.
     """
     sl = _to_string_sequence(x).pad(width, '0', True, False)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 
 @register_function(scope='str')
@@ -2032,7 +2044,8 @@ def str_isupper(x):
 def to_string(x):
     # don't change the dtype, otherwise for each block the dtype may be different (string length)
     sl = vaex.strings.to_string(x)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
+
 
 @register_function()
 def format(x, format):
@@ -2042,7 +2055,7 @@ def format(x, format):
         # sometimes the dtype can be object, but seen as an string array
         x = _to_string_sequence(x)
     sl = vaex.strings.format(x, format)
-    return column.ColumnStringArrow(sl.bytes, sl.indices, sl.length, sl.offset, string_sequence=sl)
+    return column.ColumnStringArrow.from_string_sequence(sl)
 
 
 for name in dir(scopes['str']):
@@ -2121,6 +2134,8 @@ def _astype(x, dtype):
     # we rely on numpy for astype conversions (TODO: possible performance hit?)
     if isinstance(x, vaex.column.ColumnString):
         x = x.to_numpy()
+    if isinstance(x, pa.Array):
+        x = x.to_pandas().values
     return x.astype(dtype)
 
 
