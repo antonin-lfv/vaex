@@ -10,7 +10,7 @@ import vaex.utils
 import vaex.execution
 import vaex.export
 import vaex.hdf5.dataset
-from vaex.column import ColumnStringArrow, str_type
+from vaex.column import ColumnStringArrow
 
 max_length = int(1e5)
 
@@ -150,7 +150,7 @@ def export_hdf5(dataset, path, column_names=None, byteorder="=", shuffle=False, 
             dtype = dataset.dtype(column_name)
             shape = (N, ) + dataset._shape_of(column_name)[1:]
             h5column_output = h5columns_output.require_group(column_name)
-            if dtype == str_type:
+            if vaex.array_types.is_string_type(dtype):
                 # TODO: if no selection or filter, we could do this
                 # if isinstance(column, ColumnStringArrow):
                 #     data_shape = column.bytes.shape
