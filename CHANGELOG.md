@@ -5,8 +5,13 @@
      * `df.rename_column` is now `df.rename` (and also renames variables)
      * DataFrame uses a normal dict instead of OrderedDict, requiring Python >= 3.6
      * Default limits (e.g. for plots) is minmax, so we don't miss outliers
+<<<<<<< HEAD
      * `df.get_column_names()` returns the aliased names (invalid identifiers), pass `alias=False` to get the internal column name
      * Default value of `virtual` is True in method `df.export`, `df.to_dict`, `df.to_items`, `df.to_arrays`.
+=======
+     * df.get_column_names() returns the aliased names (invalid identifiers), pass alias=False to get the internal column name
+     * df.dtype is a property, to get data types for expressions, use df.data_type(), df.expr.dtype is still behaving the same
+>>>>>>> refactor(core)!: df.dtype is renamed to df.data_type and df.dtype is a property
 
 # vaex-core 2.0.0-dev
    * Performance
