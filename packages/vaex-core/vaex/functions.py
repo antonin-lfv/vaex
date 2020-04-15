@@ -86,11 +86,12 @@ def register_function(scope=None, as_property=False, name=None, on_expression=Tr
                         return functools.wraps(function)(wrapper)
                     setattr(vaex.expression.Expression, name, closure())
                     c = closure()
-                    if nep13:
-                        vaex.expression.nep13_method(getattr(np, name))(c)
-                    if nep18:
-                        vaex.expression.nep18_method(getattr(np, name))(c)
-                    setattr(vaex.expression.Expression, name, c)
+                    if name != 'searchsorted':
+                        if nep13:
+                            vaex.expression.nep13_method(getattr(np, name))(c)
+                        if nep18:
+                            vaex.expression.nep18_method(getattr(np, name))(c)
+                        setattr(vaex.expression.Expression, name, c)
         vaex.expression.expression_namespace[prefix + name] = f
         return f  # we leave the original function as is
     return wrapper
@@ -125,7 +126,6 @@ deg2rad
 minimum
 maximum
 clip
-searchsorted
 isfinite
 digitize
 searchsorted
